@@ -1,12 +1,14 @@
 # Windsurf Skills Kit
 
-一键安装 Windsurf IDE 的 AI 协作体系——通用 Skills、治理规则、工作流。
+Windsurf IDE 的 Agent Skills 货架——按项目按需挑选，复制到项目中使用。
 
 ## 这是什么？
 
-[Windsurf Skills](https://docs.windsurf.com/windsurf/cascade/skills) 是 Windsurf IDE 中 Cascade AI 的能力扩展机制。本仓库打包了一套经过筛选的通用 Skills + 治理机制，安装后所有项目自动可用。
+[Windsurf Skills](https://docs.windsurf.com/windsurf/cascade/skills) 是 Windsurf IDE 中 Cascade AI 的能力扩展机制。本仓库是一个**精选货架**，收录了经过验证的通用 Skills、治理规则和工作流。
 
-## 包含内容
+**设计理念：每个项目独立控制自己的 Skills 组合**——从货架挑选需要的，复制到项目中，不强制全局安装。
+
+## 货架内容
 
 ### Skills（5 个）
 
@@ -28,67 +30,72 @@
 
 | 名称 | 触发方式 | 作用 |
 |------|---------|------|
-| **init-project-skills** | `/init-project-skills` | 分析新项目，用 skill-creator 现场生成项目专属 Skills |
+| **init-project-skills** | `/init-project-skills` | 分析新项目结构，用 skill-creator 现场生成项目专属 Skills |
 | **scan-skills** | `/scan-skills` | 扫描所有已装 Skills，检查重叠/冲突，输出健康度报告 |
-
-## 安装
-
-### 方式一：一键脚本（推荐）
-
-```powershell
-# 克隆仓库
-git clone https://github.com/<你的用户名>/windsurf-skills-kit.git
-cd windsurf-skills-kit
-
-# 运行安装脚本
-PowerShell -ExecutionPolicy Bypass -File setup.ps1
-```
-
-### 方式二：手动复制
-
-将以下内容复制到 `~/.codeium/windsurf/` 目录：
-
-```
-~/.codeium/windsurf/
-├── skills/         ← 复制本仓库的 skills/ 目录
-├── rules/          ← 复制本仓库的 rules/ 目录
-└── workflows/      ← 复制本仓库的 workflows/ 目录
-```
 
 ## 使用方式
 
-### 安装后自动生效
+### 1. 克隆货架
 
-- 所有 Skills 在任何项目中自动可用（Global 作用域）
-- `skill_governance` 规则 always_on，每次创建新 Skill 时自动触发检查
+```bash
+git clone https://github.com/chenxingyu0830/windsurf-skills-kit.git
+```
 
-### 新项目初始化
+### 2. 为新项目挑选 Skills
 
-在新项目目录中对 Cascade 说 `/init-project-skills`，AI 会：
+```powershell
+# 进入你的项目目录
+cd your-project
+
+# 创建 Skills 目录
+mkdir -p .windsurf/skills .windsurf/rules .windsurf/workflows
+
+# 按需复制你要的 Skills（不是全装，按需挑选）
+Copy-Item -Recurse path/to/windsurf-skills-kit/skills/skill-creator .windsurf/skills/
+Copy-Item -Recurse path/to/windsurf-skills-kit/skills/systematic-debugging .windsurf/skills/
+# ... 挑选你需要的
+
+# 复制治理规则和工作流
+Copy-Item path/to/windsurf-skills-kit/rules/skill_governance.md .windsurf/rules/
+Copy-Item path/to/windsurf-skills-kit/workflows/*.md .windsurf/workflows/
+```
+
+### 3. 用 /init-project-skills 生成项目专属 Skills
+
+复制完通用 Skills 后，在 Windsurf 中对 Cascade 说 `/init-project-skills`，AI 会：
 1. 分析项目结构、语言、框架
 2. 识别项目特有的重复模式
 3. 用 skill-creator 现场生成 2-3 个项目专属 Skills
-4. 专属 Skills 保存在项目的 `.windsurf/skills/` 目录（不污染 Global）
 
-### 定期维护
+### 4. 定期维护
 
 运行 `/scan-skills` 检查 Skills 健康度：
 - 是否有 description 重叠/冲突
-- 数量是否过多（建议 ≤ 15 个）
+- 数量是否过多（建议每项目 ≤ 10 个）
 - 是否有从未使用的 Skill 需要清理
 
 ## 设计理念
 
 ```
-Global（装一次，所有项目通用）
-  └── 通用 Skills + 治理规则 + 工作流
+windsurf-skills-kit（货架，不装进任何项目）
+  └── 精选的通用 Skills / Rules / Workflows
 
-Workspace（每个项目按需生成）
-  └── 项目专属 Skills（AI 现场分析，不用模板）
+项目 A 的 .windsurf/（按需挑选）
+  ├── skills/skill-creator/          ← 从货架复制
+  ├── skills/systematic-debugging/   ← 从货架复制
+  ├── skills/my-project-skill/       ← AI 现场生成
+  └── rules/skill_governance.md      ← 从货架复制
+
+项目 B 的 .windsurf/（不同技术栈，不同组合）
+  ├── skills/skill-creator/          ← 从货架复制
+  ├── skills/webapp-testing/         ← 从货架复制
+  ├── skills/my-api-skill/           ← AI 现场生成
+  └── rules/skill_governance.md      ← 从货架复制
 ```
 
-- **通用的全局装一次**：调试、TDD、验证等能力跨项目通用
-- **专属的让 AI 现场生成**：不预设模板，根据项目实际情况定制
+- **每个项目独立控制**：不同技术栈挑选不同 Skills，不强制统一
+- **货架只是源码**：本仓库不安装到任何地方，只作为复制来源
+- **项目专属 Skills 由 AI 现场生成**：不预设模板，根据项目实际情况定制
 - **治理优先**：先检查扩展，再考虑新建，控制 Skill 数量
 
 ## 致谢
