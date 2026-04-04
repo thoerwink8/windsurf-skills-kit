@@ -4,9 +4,12 @@
 #   .\add-skill.ps1 <project-path> <skill-name>
 #   .\add-skill.ps1 list                          列出所有可用 Skills
 #
+# Skills 按域分类存放在 skills/<category>/<skill-name>/ 下，
+# 但用户只需提供 skill-name，脚本自动在所有分类中查找。
+#
 # 示例:
 #   .\add-skill.ps1 D:\frank\myproject systematic-debugging
-#   .\add-skill.ps1 D:\frank\myproject webapp-testing
+#   .\add-skill.ps1 D:\frank\myproject dbs-diagnosis
 
 param(
     [Parameter(Position=0)] [string]$Arg1,
@@ -16,22 +19,37 @@ param(
 $KitRoot   = $PSScriptRoot
 $KitSkills = Join-Path $KitRoot "skills"
 
+# --- Helper: find a skill directory by name across all categories ---
+function Find-Skill {
+    param([string]$Name)
+    foreach ($category in (Get-ChildItem $KitSkills -Directory)) {
+        $candidate = Join-Path $category.FullName $Name
+        if (Test-Path $candidate) { return $candidate }
+    }
+    return $null
+}
+
+# --- List mode ---
 if ($Arg1 -eq "list" -or !$Arg1) {
     Write-Host "`n  Available skills in windsurf-skills-kit:" -ForegroundColor Cyan
-    Get-ChildItem $KitSkills -Directory | ForEach-Object {
-        $desc = ""
-        $skill = Join-Path $_.FullName "SKILL.md"
-        if (Test-Path $skill) {
-            $line = Get-Content $skill | Where-Object { $_ -match "^description:" } | Select-Object -First 1
-            if ($line) { $desc = $line -replace "^description:\s*", "" }
+    foreach ($category in (Get-ChildItem $KitSkills -Directory | Sort-Object Name)) {
+        Write-Host "`n  [$($category.Name)]" -ForegroundColor Yellow
+        Get-ChildItem $category.FullName -Directory | ForEach-Object {
+            $desc = ""
+            $skill = Join-Path $_.FullName "SKILL.md"
+            if (Test-Path $skill) {
+                $line = Get-Content $skill | Where-Object { $_ -match "^description:" } | Select-Object -First 1
+                if ($line) { $desc = $line -replace "^description:\s*", "" }
+            }
+            Write-Host "    $($_.Name)" -ForegroundColor Green -NoNewline
+            if ($desc) { Write-Host " — $desc" -ForegroundColor Gray } else { Write-Host "" }
         }
-        Write-Host "    $($_.Name)" -ForegroundColor Green -NoNewline
-        if ($desc) { Write-Host " — $desc" -ForegroundColor Gray } else { Write-Host "" }
     }
     Write-Host "`n  Usage: .\add-skill.ps1 <project-path> <skill-name>`n"
     exit 0
 }
 
+# --- Link mode ---
 $ProjectPath = $Arg1
 
 if (!$SkillName) {
@@ -40,8 +58,8 @@ if (!$SkillName) {
     exit 1
 }
 
-$srcSkill = Join-Path $KitSkills $SkillName
-if (!(Test-Path $srcSkill)) {
+$srcSkill = Find-Skill $SkillName
+if (!$srcSkill) {
     Write-Host "  [error] Skill '$SkillName' not found. Run '.\add-skill.ps1 list' to see available skills." -ForegroundColor Red
     exit 1
 }
