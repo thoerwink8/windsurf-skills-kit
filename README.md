@@ -59,10 +59,11 @@ workflows/
 
 ## 货架内容
 
-### Skills — dev（开发质量，5 个）
+### Skills — dev（开发质量，6 个）
 
 | 名称 | 来源 | 用途 |
 |------|------|------|
+| **brainstorming** | [obra/superpowers](https://github.com/obra/superpowers) | 苏格拉底式设计精炼：通过对话将想法变成完整设计 |
 | **systematic-debugging** | [obra/superpowers](https://github.com/obra/superpowers) | 系统化排查 bug 根因 |
 | **test-driven-development** | obra/superpowers | 测试驱动开发 |
 | **ui-ux-pro-max** | 原创 | UI/UX 设计系统：67 风格 + 96 配色 + 57 字体 + 99 UX 指南，Python 搜索引擎 |
