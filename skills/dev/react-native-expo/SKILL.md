@@ -171,3 +171,23 @@ For "7天 / 30天 / 全部" usage-history charts:
 - All/60d+ → weekly buckets (Monday-aligned, `weekMs = weekIdx * 7 * 86400000`).
 - Keep `dailyChart` interface with `useWeekly: boolean` flag so render code stays uniform.
 - Cap data points at ~12 bars for chart readability; aggregate older data into weeks.
+
+### 9. DialogModal — unify confirm / alert / edit dialogs
+Typical RN app accumulates 10+ ad-hoc `Modal` + nested `TouchableOpacity` patterns
+for "delete confirm" / "error alert" / "edit name" modals — each ~20 lines of boilerplate.
+Extract a shared `DialogModal` with these props:
+```ts
+{ visible, onClose, title, description?, children?,
+  confirmText?, cancelText?, onConfirm,
+  confirmDisabled?, confirmLoading?,
+  confirmVariant?: 'primary' | 'danger',
+  hideCancel?: boolean   // alert-only mode (single OK button)
+}
+```
+Call sites shrink from ~20 lines to ~8 lines. Variants cover:
+- **Confirm** (default): title + desc + cancel + primary confirm
+- **Destructive** (`confirmVariant="danger"`): red confirm button for delete actions
+- **Edit** (with `children`): slot for `<Input>` form fields inside
+- **Alert** (`hideCancel`): single-button error/info dialog
+
+Validated in production: replaced 10 Modal call sites across profile/code-detail/account-detail/member-detail/upload/admin.tsx.
