@@ -114,3 +114,60 @@ You are an expert in TypeScript, React Native, Expo, and Mobile UI development.
 - [ ] Pull-to-refresh on all data screens
 - [ ] Dark mode tested
 - [ ] Keyboard handling for form screens
+
+## UX Audit & Refactor Patterns (validated in prod)
+
+### 1. Tab-click vs swipe desync (horizontal paging)
+When implementing `Pager`-style horizontal `FlatList` with tab strip, the tab button's `onPress` must both:
+1. Update the active index state, AND
+2. Call `flatListRef.current?.scrollToOffset({ offset: index * pageWidth, animated: true })`
+Otherwise tapping the tab updates state but content doesn't scroll.
+And `onMomentumScrollEnd` should compute `Math.round(e.nativeEvent.contentOffset.x / pageWidth)` to sync state back from swipe.
+
+### 2. Extract repeated UX primitives
+Watch for these duplications across 3+ screens — extract to `components/`:
+- **SegmentedPills** `<today/week/month>` style pill row → replace hand-rolled `<Pressable>` maps.
+- **EmptyState** `<icon + text + optional hint>` → replace inline `<View><MaterialIcons size=48 /><Text /></View>`.
+- **ConsumptionSummary** / **MetricPill** → right-aligned stack of value + label.
+Consolidating cuts file size 30-50% and enforces visual consistency.
+
+### 3. Label clarity — avoid internal jargon in user UI
+Examples of bad → good rewrites validated in audit:
+- `W%` → `周耗%` (weekly quota consumed %)
+- `按 W% 排序` → `按周额度剩余`
+- `贡献排行` (when content is consumption, not donation) → `消耗排行`
+Principle: if a first-time user can't decipher the label without training, rename it.
+
+### 4. Nested `Pressable` and `stopPropagation`
+React Native `Pressable` bubbles taps. For nested clickables (inner stat card inside outer row):
+```tsx
+<Pressable onPress={(e) => { (e as any).stopPropagation?.(); onPress(); }}>
+```
+Without this, tapping inner stat also fires outer card onPress — causing params to be overridden by the outer navigation.
+
+### 5. Role-gated navigation on shared screens
+When a tab/screen is visible to both `admin` and `member` roles but some API calls require admin:
+- Wrap the admin-API Pressable in `isAdmin ? <Pressable>{body}</Pressable> : body` to make it display-only for non-admin.
+- Don't hide the data itself — just remove the navigation affordance.
+- In the destination screen, always `if (!isAdmin) return;` before admin-only API calls.
+
+### 6. Tab visibility + role-scoped sub-tabs pattern
+When a previously admin-only top tab needs to be exposed to all members:
+1. Remove `isAdmin && <Tabs.Screen>` wrapper in `_layout.tsx` so the tab is always visible.
+2. Inside the screen, define `allTabs` with `adminOnly?: boolean` flags, then `const tabs = isAdmin ? allTabs : allTabs.filter(t => !t.adminOnly)`.
+3. Snap back to a safe tab if a non-admin lands on an admin-only tab via deep-link: `useEffect(() => { if (!isAdmin && tab === 'adminTab') setTab('overview'); }, [isAdmin, tab])`.
+4. In render: `{tab === 'adminTab' && isAdmin && <AdminTab />}` — double guard.
+
+### 7. Filtered deep-link navigation from summary stats
+Summary stat on home ("充裕 12" / "偏低 3" / "紧张 1") should navigate to the pre-filtered detail screen, not the unfiltered list:
+```tsx
+router.push({ pathname: '/(tabs)/pool', params: { filter: 'critical' } })
+```
+Requires destination screen to accept `?filter=` via `useLocalSearchParams` and pre-set state.
+
+### 8. Date-range filter with weekly bucket fallback
+For "7天 / 30天 / 全部" usage-history charts:
+- 7d/30d → daily buckets (one bar per day).
+- All/60d+ → weekly buckets (Monday-aligned, `weekMs = weekIdx * 7 * 86400000`).
+- Keep `dailyChart` interface with `useWeekly: boolean` flag so render code stays uniform.
+- Cap data points at ~12 bars for chart readability; aggregate older data into weeks.
