@@ -1,0 +1,7 @@
+{
+  "name": "windsurf-skills-kit",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Windsurf workspace skills library: Junction-linked into project workspaces via add-skill.ps1.",
+  "license": "MIT"
+}
