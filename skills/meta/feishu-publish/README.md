@@ -1,82 +1,89 @@
 # feishu-publish
 
-把本地 markdown 推送到飞书云文档的 Skill。
+把本地 Markdown 推送到飞书云文档的 Skill。
 
 ## 文件结构
 
 ```
 feishu-publish/
 ├── SKILL.md                          ← Cascade 自动加载入口
-├── README.md                         ← 你正在看的这个
-├── .env.example                      ← 凭证模板
-├── scripts/
-│   ├── publish.py                    ← 命令行入口
-│   └── lib_feishu.py                 ← 飞书 OpenAPI 客户端
-└── references/
-    ├── feishu-setup.md               ← 飞书自建应用创建教程
-    └── feishu-api-cheatsheet.md      ← API 速查
+└── README.md                         ← 你正在看的这个
 ```
 
 ## 快速开始
 
 ### 1. 一次性配置
 
-按 `references/feishu-setup.md` 创建飞书自建应用，拿到凭证后写入：
-
+```bash
+npx @larksuite/cli@latest install
+lark-cli auth login
 ```
-~/.feishu-credentials.json
-```
 
-格式见 `.env.example`。
-
-### 2. 验证连通
+浏览器确认登录后验证：
 
 ```bash
-python scripts/publish.py --check
+lark-cli auth status
 ```
 
-### 3. 推送 markdown
+### 2. 推送 Markdown
 
-```bash
-# 新建文档（默认）
-python scripts/publish.py docs/clash-guide.md
+先列目标文件夹，确认不会创建重复文档或重复项目文件夹：
 
-# 自定义标题
-python scripts/publish.py docs/clash-guide.md --name "Clash 配置指南"
-
-# 推到指定文件夹
-python scripts/publish.py docs/clash-guide.md --folder <folder_token>
+```powershell
+$params = '{\"folder_token\":\"<TOKEN>\"}'
+lark-cli drive files list --params $params --as user --format table
 ```
 
-### 4. 通过 Cascade 调用
+新建文档：
+
+```powershell
+lark-cli docs +create `
+  --api-version v2 `
+  --parent-token "<FOLDER_TOKEN>" `
+  --content "@docs\showcase\showcase.md" `
+  --doc-format markdown `
+  --as user
+```
+
+更新已有文档：
+
+```powershell
+lark-cli docs +update `
+  --api-version v2 `
+  --doc "<DOCUMENT_ID_OR_URL>" `
+  --markdown "@docs\showcase\showcase.md" `
+  --mode replace_all `
+  --as user
+```
+
+### 3. 通过 Cascade 调用
 
 在 Windsurf 中对 Cascade 说：
 
 ```
-把 docs/clash-guide.md 推到飞书
+把 docs/showcase/showcase.md 推到飞书
 ```
 
-Cascade 会识别意图 → 加载 `SKILL.md` → 执行脚本 → 返回飞书 URL。
+Cascade 会识别意图 → 加载 `SKILL.md` → 使用 `lark-cli` 创建或更新飞书文档。
 
 ## 依赖
 
-只用 Python stdlib，**不需要 pip install**。
-
-测试过：Python 3.10+
+- `lark-cli`
+- 已登录的飞书用户身份
 
 ## 安全
 
-- 凭证文件**绝对不要进 Git**（路径在用户目录而非项目内）
-- `app_secret` 等同密码，泄露后立刻去飞书开放平台重置
-- 应用权限严格限定在你授权的文档/文件夹
+- 不保存 `app_secret`。
+- 不使用自建应用 tenant token。
+- 发布前必须读取 `feishu.json` 并列目标文件夹，避免重复创建。
 
 ## 限制
 
-- markdown 单文件 ≤ 20MB（飞书 import API 上限）
-- `--replace` 覆盖模式当前是 stub，会回退到 publish 模式（待 v2 完整实现）
-- 飞书 API 调用频率 100 QPS（脚本调用频率远低于此，无需关心）
+- 只覆盖 Markdown → 飞书文档的创建/更新。
+- 不处理飞书 Base、表格、日历、邮箱、会议、任务、OKR、白板、幻灯片等能力。
 
 ## 维护
 
-- 飞书 API 变更：参考 https://open.feishu.cn/document/server-docs/docs/docs-overview
-- 错误码补充：在 `lib_feishu.py` 的 `ERROR_HINTS` 字典追加
+- 文档生成由 `showcase-generator` 负责。
+- 飞书发布由本 skill 负责。
+- 公共登录与权限问题使用 `lark-shared`。
