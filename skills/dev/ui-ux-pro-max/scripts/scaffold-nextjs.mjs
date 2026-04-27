@@ -157,71 +157,64 @@ if (!hasButton) {
   run("pnpm dlx shadcn@latest add button card badge -y");
 
   // ─── Phase 3b: Apply size overrides ──────────────────────────
+  // Strategy: exact substring matching (not regex), because shadcn uses
+  // unquoted TS keys (sm:) not JSON keys ("sm":). Regex is too fragile.
   log("Phase 3b: Override button/badge sizes (nextjs-shadcn-standards)");
 
   const buttonPath = join(webDir, "components", "ui", "button.tsx");
   if (existsSync(buttonPath) && !dryRun) {
     let src = readFileSync(buttonPath, "utf-8");
 
-    // Button size overrides — match the size block and replace
-    const sizePatterns = [
-      // default: h-8 → h-10, px-2.5 → px-4
-      [/h-8\b/g, "h-10"],
+    // Each pair: [exact old substring, new substring]
+    const replacements = [
+      // default: h-8 → h-10, gap-1.5 → gap-2, px-2.5 → px-4
       [
-        /("default":\s*")[^"]*h-8[^"]*(")/,
-        (m, pre, post) =>
-          pre +
-          "h-10 gap-2 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3" +
-          post,
-      ],
-      // sm: h-7 → h-9
-      [
-        /("sm":\s*")[^"]*h-7[^"]*(")/,
-        (m, pre, post) => {
-          const inner = m.slice(pre.length, -post.length);
-          return pre + inner.replace(/h-7\b/, "h-9").replace(/px-2\.5/, "px-3.5").replace(/text-\[0\.8rem\]/, "text-sm") + post;
-        },
-      ],
-      // lg: h-9 → h-12, add text-base
-      [
-        /("lg":\s*")[^"]*h-9 gap[^"]*(")/,
-        (m, pre, post) =>
-          pre +
-          "h-12 gap-2 px-6 text-base has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4" +
-          post,
+        "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+        "h-10 gap-2 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
       ],
       // xs: h-6 → h-7
-      [/("xs":\s*"[^"]*?)h-6\b/g, "$1h-7"],
-      // icon sizes
-      [/"icon":\s*"size-8"/, '"icon": "size-10"'],
-      [/"icon-lg":\s*"size-9"/, '"icon-lg": "size-12"'],
+      ["xs: \"h-6 gap-1", "xs: \"h-7 gap-1"],
+      // sm: h-7 → h-9, px-2.5 → px-3.5, text-[0.8rem] → text-sm
+      [
+        "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem]",
+        "h-9 gap-1.5 rounded-[min(var(--radius-md),12px)] px-3.5 text-sm",
+      ],
+      // lg: h-9 → h-12, add text-base, px-2.5 → px-6
+      [
+        "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+        "h-12 gap-2 px-6 text-base has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+      ],
+      // icon: size-8 → size-10
+      ['icon: "size-8"', 'icon: "size-10"'],
+      // icon-lg: size-9 → size-12
+      ['"icon-lg": "size-9"', '"icon-lg": "size-12"'],
     ];
 
-    for (const [pattern, replacement] of sizePatterns) {
-      if (typeof replacement === "function") {
-        src = src.replace(pattern, replacement);
-      } else {
-        src = src.replace(pattern, replacement);
+    let appliedCount = 0;
+    for (const [oldStr, newStr] of replacements) {
+      if (src.includes(oldStr)) {
+        src = src.replace(oldStr, newStr);
+        appliedCount++;
       }
     }
 
-    // Ensure import type for React if present
-    src = src.replace(
-      /^import \* as React from "react";/m,
-      'import type * as React from "react";',
-    );
-
     writeFileSync(buttonPath, src);
-    log("button.tsx sizes overridden");
+    log(`button.tsx: ${appliedCount}/${replacements.length} size overrides applied`);
+
+    if (appliedCount < replacements.length) {
+      log(
+        "⚠️  Some button overrides didn't match — shadcn API may have changed. Manual review recommended.",
+      );
+    }
   }
 
   const badgePath = join(webDir, "components", "ui", "badge.tsx");
   if (existsSync(badgePath) && !dryRun) {
     let src = readFileSync(badgePath, "utf-8");
-    // Badge: h-5 → h-6, gap-1 → gap-1.5, px-2 → px-2.5
-    src = src.replace(/\bh-5\b/, "h-6");
-    src = src.replace(/\bgap-1\b/, "gap-1.5");
-    src = src.replace(/\bpx-2\b/, "px-2.5");
+    // Badge: h-5 → h-6, px-2 py → px-2.5 py (exact match near boundary)
+    src = src.replace(" h-5 ", " h-6 ");
+    src = src.replace(" gap-1 ", " gap-1.5 ");
+    src = src.replace(" px-2 ", " px-2.5 ");
     writeFileSync(badgePath, src);
     log("badge.tsx sizes overridden");
   }
