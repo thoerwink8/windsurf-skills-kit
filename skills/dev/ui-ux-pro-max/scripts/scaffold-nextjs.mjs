@@ -30,9 +30,25 @@ const dryRun = args.includes("--dry-run");
 
 const webDir = join(projectRoot, webName);
 const log = (msg) => console.log(`[scaffold] ${msg}`);
-const run = (cmd, cwd = webDir) => {
+const run = (cmd, cwd = webDir, { tolerateStderr = false } = {}) => {
   log(`> ${cmd}`);
-  if (!dryRun) execSync(cmd, { cwd, stdio: "inherit" });
+  if (dryRun) return;
+  if (tolerateStderr) {
+    // shadcn CLI writes progress (with emoji) to stderr, which makes
+    // PowerShell treat the process as failed even on exit code 0.
+    // Capture output and only throw on real non-zero exit codes.
+    try {
+      const out = execSync(cmd, { cwd, stdio: "pipe", encoding: "utf-8" });
+      if (out.trim()) process.stdout.write(out);
+    } catch (e) {
+      // execSync throws on non-zero exit. Print combined output for diagnosis.
+      if (e.stdout) process.stdout.write(e.stdout);
+      if (e.stderr) process.stderr.write(e.stderr);
+      throw e;
+    }
+  } else {
+    execSync(cmd, { cwd, stdio: "inherit" });
+  }
 };
 
 // ─── Detection ─────────────────────────────────────────────────
@@ -153,8 +169,8 @@ if (!hasBiome) {
 // ─── Phase 3: shadcn/ui ───────────────────────────────────────
 if (!hasButton) {
   log("Phase 3: shadcn init + base components");
-  run("pnpm dlx shadcn@latest init -d");
-  run("pnpm dlx shadcn@latest add button card badge -y");
+  run("pnpm dlx shadcn@latest init -d", webDir, { tolerateStderr: true });
+  run("pnpm dlx shadcn@latest add button card badge -y", webDir, { tolerateStderr: true });
 
   // ─── Phase 3b: Apply size overrides ──────────────────────────
   // Strategy: exact substring matching (not regex), because shadcn uses
@@ -222,6 +238,17 @@ if (!hasButton) {
   log("Phase 3: SKIP (button.tsx exists)");
 }
 
+// ─── Re-detect after Phase 3 (shadcn init creates files) ──────
+const currentHasGlobals = existsSync(join(webDir, "app", "globals.css"));
+const currentGlobalsHasOklch =
+  currentHasGlobals &&
+  readFileSync(join(webDir, "app", "globals.css"), "utf-8").includes("oklch");
+const currentHasFontLock =
+  currentHasGlobals &&
+  readFileSync(join(webDir, "app", "globals.css"), "utf-8").includes(
+    "font-size: 16px",
+  );
+
 // ─── Phase 4: Layout cleanup ──────────────────────────────────
 const layoutPath = join(webDir, "app", "layout.tsx");
 if (existsSync(layoutPath) && !dryRun) {
@@ -249,17 +276,21 @@ if (existsSync(layoutPath) && !dryRun) {
 }
 
 // ─── Phase 5: globals.css template ─────────────────────────────
-if (!globalsHasOklch && hasGlobals && !dryRun) {
-  log("Phase 5: globals.css — writing oklch placeholder structure");
+if (currentHasGlobals && !currentHasFontLock && !dryRun) {
+  log("Phase 5: globals.css — writing oklch template + font-size lock + type scale");
   // We write the STRUCTURE with placeholder values.
   // The AI Skill fills in actual colors based on design system generation.
   const cssTemplate = `@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --radius: 0.625rem;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "Fira Code", monospace;
 
   /* ─── Type Scale (显式定义，防止 rem 漂移) ─── */
   --text-xs: 0.75rem;           /* 12px */
@@ -273,6 +304,38 @@ if (!globalsHasOklch && hasGlobals && !dryRun) {
   --text-xl: 1.25rem;           /* 20px */
   --text-xl--line-height: 1.75rem;
 
+  /* ─── Color Mappings (Tailwind v4 ← CSS vars) ─── */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius: 0.625rem;
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
