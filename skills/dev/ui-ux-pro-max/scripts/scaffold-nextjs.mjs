@@ -260,6 +260,19 @@ if (!globalsHasOklch && hasGlobals && !dryRun) {
 @theme inline {
   --radius: 0.625rem;
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* ─── Type Scale (显式定义，防止 rem 漂移) ─── */
+  --text-xs: 0.75rem;           /* 12px */
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;          /* 14px */
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;            /* 16px */
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;          /* 18px */
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;           /* 20px */
+  --text-xl--line-height: 1.75rem;
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -347,6 +360,11 @@ if (!globalsHasOklch && hasGlobals && !dryRun) {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    @apply font-sans;
   }
 }
 `;
