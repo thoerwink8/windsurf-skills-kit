@@ -31,10 +31,10 @@ Windsurf IDE 的 Agent Skills 货架——按项目按需挑选，复制到项�
 windsurf-skills-kit/
 ├── skills/                         ← 按域分类
 │   ├── process/                    ← 开发流程（11 个）
-│   ├── technique/                  ← 技术能力（4 个）
+│   ├── technique/                  ← 技术能力（5 个）
 │   ├── stack/                      ← 技术栈规范（3 个）
 │   ├── business/                   ← 商业诊断（9 个）
-│   └── meta/                       ← 元工具（4 个）
+│   └── meta/                       ← 元工具（5 个）
 ├── rules/                          ← 治理规则（暂不分类）
 ├── workflows/                      ← 工作流（暂不分类）
 ├── add-skill.ps1                   ← 链接工具
@@ -65,7 +65,7 @@ windsurf-skills-kit/
 | **test-driven-development** | [obra/superpowers](https://github.com/obra/superpowers) | RED-GREEN-REFACTOR 测试驱动开发 |
 | **verification-before-completion** | [obra/superpowers](https://github.com/obra/superpowers) | 声称完成前自动验证 |
 
-### Skills — technique（技术能力，4 个）
+### Skills — technique（技术能力，5 个）
 
 | 名称 | 来源 | 用途 |
 |------|------|------|
@@ -73,6 +73,7 @@ windsurf-skills-kit/
 | **security-audit** | 原创 | 安全审计：OWASP Top 10、输入验证、认证授权、密钥管理 |
 | **webapp-testing** | [anthropics/skills](https://github.com/anthropics/skills) | Playwright 浏览器自动化测试 |
 | **database-patterns** | 原创 | 数据库设计与优化：Schema 设计、查询优化、Migration、ORM 模式 |
+| **mcp-server-builder** | [alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | OpenAPI → MCP Server 脚手架 + manifest 验证器 |
 
 ### Skills — stack（技术栈规范，3 个）
 
@@ -98,12 +99,13 @@ dontbesilent 商业工具箱（[dontbesilent/dbskill](https://github.com/dontbes
 | **chatroom-austrian** | 哈耶克 × 米塞斯 × Claude 奥派经济学多角色讨论 |
 | **dbskill-upgrade** | dbs 系列 Skill 升级工具 |
 
-### Skills — meta（元工具，4 个）
+### Skills — meta（元工具，5 个）
 
 | 名称 | 来源 | 用途 |
 |------|------|------|
 | **find-skills** | [claudiothebot/find-skills-skill](https://github.com/claudiothebot/find-skills-skill) | 从 skills.sh 开源生态搜索、评估和安装 skills |
 | **skill-creator** | [anthropics/skills](https://github.com/anthropics/skills) | 元技能：创建、测试、优化新 Skills |
+| **skill-security-auditor** | [alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | Skill 安全审计：代码注入/prompt 注入/供应链风险扫描 |
 | **feishu-publish** | 原创 | 飞书文档发布工具 |
 | **showcase-generator** | 原创 | Showcase 生成器 |
 
