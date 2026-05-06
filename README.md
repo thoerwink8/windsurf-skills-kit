@@ -30,49 +30,57 @@ Windsurf IDE 的 Agent Skills 货架——按项目按需挑选，复制到项�
 ```
 windsurf-skills-kit/
 ├── skills/                         ← 按域分类
-│   ├── dev/                        ← 开发质量（10 个）
+│   ├── process/                    ← 开发流程（11 个）
+│   ├── technique/                  ← 技术能力（4 个）
+│   ├── stack/                      ← 技术栈规范（3 个）
 │   ├── business/                   ← 商业诊断（9 个）
-│   └── meta/                       ← 元工具（2 个）
+│   └── meta/                       ← 元工具（4 个）
 ├── rules/                          ← 治理规则（暂不分类）
 ├── workflows/                      ← 工作流（暂不分类）
 ├── add-skill.ps1                   ← 链接工具
 └── README.md
 ```
 
-**扩展约定**：当 rules 或 workflows 增长到 5+ 时，同样按域分类：
-
-```
-rules/
-  dev/          ← 开发相关规则
-  business/     ← 商业相关规则
-  meta/         ← 元治理规则
-
-workflows/
-  dev/          ← 开发相关工作流
-  business/     ← 商业相关工作流
-  meta/         ← 元管理工作流
-```
-
-当前仅 1 条规则 + 2 个工作流（全部是 meta 级别），不做过早分类。
+**扩展约定**：当 rules 或 workflows 增长到 5+ 时，同样按域分类。当前仅 1 条规则 + 2 个工作流（全部是 meta 级别），不做过早分类。
 
 ---
 
 ## 货架内容
 
-### Skills — dev（开发质量，10 个）
+### Skills — process（开发流程，11 个）
+
+完整的 AI 辅助开发管线：构思 → 设计 → 计划 → 执行 → 审查 → 收尾。
 
 | 名称 | 来源 | 用途 |
 |------|------|------|
 | **brainstorming** | [obra/superpowers](https://github.com/obra/superpowers) | 苏格拉底式设计精炼：通过对话将想法变成完整设计 |
+| **writing-plans** | [obra/superpowers](https://github.com/obra/superpowers) | 从设计文档生成详细实现计划（bite-sized tasks + TDD） |
+| **executing-plans** | [obra/superpowers](https://github.com/obra/superpowers) | 加载实现计划，逐步执行并设置检查点 |
+| **subagent-driven-development** | [obra/superpowers](https://github.com/obra/superpowers) | 每个任务派遣独立子 Agent，双阶段审查（规格 + 质量） |
+| **dispatching-parallel-agents** | [obra/superpowers](https://github.com/obra/superpowers) | 多个独立问题并行派遣 Agent 解决 |
+| **requesting-code-review** | [obra/superpowers](https://github.com/obra/superpowers) | 提交前派遣 Code Review 子 Agent |
+| **receiving-code-review** | [obra/superpowers](https://github.com/obra/superpowers) | 接收 Review 反馈的技术评估流程（拒绝表演式认同） |
+| **finishing-a-development-branch** | [obra/superpowers](https://github.com/obra/superpowers) | 开发完成后决策：合并 / PR / 保留 / 丢弃 |
+| **using-git-worktrees** | [obra/superpowers](https://github.com/obra/superpowers) | 为功能开发创建隔离工作区 |
+| **test-driven-development** | [obra/superpowers](https://github.com/obra/superpowers) | RED-GREEN-REFACTOR 测试驱动开发 |
+| **verification-before-completion** | [obra/superpowers](https://github.com/obra/superpowers) | 声称完成前自动验证 |
+
+### Skills — technique（技术能力，4 个）
+
+| 名称 | 来源 | 用途 |
+|------|------|------|
+| **systematic-debugging** | [obra/superpowers](https://github.com/obra/superpowers) | 系统化排查 bug 根因（4 阶段流程） |
+| **security-audit** | 原创 | 安全审计：OWASP Top 10、输入验证、认证授权、密钥管理 |
+| **webapp-testing** | [anthropics/skills](https://github.com/anthropics/skills) | Playwright 浏览器自动化测试 |
 | **database-patterns** | 原创 | 数据库设计与优化：Schema 设计、查询优化、Migration、ORM 模式 |
+
+### Skills — stack（技术栈规范，3 个）
+
+| 名称 | 来源 | 用途 |
+|------|------|------|
 | **express-typescript-api** | 原创 | Express.js + TypeScript REST API 开发规范 |
 | **react-native-expo** | 原创 | Expo React Native TypeScript 开发规范 |
-| **security-audit** | 原创 | 安全审计：OWASP Top 10、输入验证、认证授权、密钥管理 |
-| **systematic-debugging** | [obra/superpowers](https://github.com/obra/superpowers) | 系统化排查 bug 根因 |
-| **test-driven-development** | obra/superpowers | 测试驱动开发 |
-| **ui-ux-pro-max** | 原创 | UI/UX 设计系统：67 风格 + 96 配色 + 57 字体 + 99 UX 指南，Python 搜索引擎 |
-| **verification-before-completion** | obra/superpowers | 声称完成前自动验证 |
-| **webapp-testing** | [anthropics/skills](https://github.com/anthropics/skills) | Playwright 浏览器自动化测试 |
+| **ui-ux-pro-max** | 原创 | UI/UX 设计系统：67 风格 + 96 配色 + 57 字体 + 99 UX 指南 |
 
 ### Skills — business（商业诊断，9 个）
 
@@ -90,12 +98,14 @@ dontbesilent 商业工具箱（[dontbesilent/dbskill](https://github.com/dontbes
 | **chatroom-austrian** | 哈耶克 × 米塞斯 × Claude 奥派经济学多角色讨论 |
 | **dbskill-upgrade** | dbs 系列 Skill 升级工具 |
 
-### Skills — meta（元工具，2 个）
+### Skills — meta（元工具，4 个）
 
 | 名称 | 来源 | 用途 |
 |------|------|------|
 | **find-skills** | [claudiothebot/find-skills-skill](https://github.com/claudiothebot/find-skills-skill) | 从 skills.sh 开源生态搜索、评估和安装 skills |
 | **skill-creator** | [anthropics/skills](https://github.com/anthropics/skills) | 元技能：创建、测试、优化新 Skills |
+| **feishu-publish** | 原创 | 飞书文档发布工具 |
+| **showcase-generator** | 原创 | Showcase 生成器 |
 
 ### Rules（1 个）
 
@@ -167,13 +177,15 @@ Windsurf 支持多 workspace 跨项目聚合 skills（打开 workspace 即自动
 ```
 windsurf-skills-kit（货架，源文件唯一存放地）
   └── skills/
-      ├── dev/           — 开发质量 Skills
+      ├── process/       — 开发流程 Skills
+      ├── technique/     — 技术能力 Skills
+      ├── stack/         — 技术栈规范 Skills
       ├── business/      — 商业诊断 Skills
       └── meta/          — 元工具 Skills
 
 项目 A 的 .windsurf/（按需挑选，Junction 链接）
   ├── skills/skill-creator/          → Junction → windsurf-skills-kit/skills/meta/skill-creator/
-  ├── skills/systematic-debugging/   → Junction → windsurf-skills-kit/skills/dev/systematic-debugging/
+  ├── skills/systematic-debugging/   → Junction → windsurf-skills-kit/skills/technique/systematic-debugging/
   └── skills/my-project-skill/       ← AI 现场生成（本地文件）
 
 项目 B 的 .windsurf/（不同组合，同一源）
