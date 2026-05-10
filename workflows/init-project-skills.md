@@ -7,7 +7,7 @@ description: 为新项目初始化 AI 协作体系：分析项目结构，用 sk
 在一个新项目中运行此工作流，自动分析项目并生成适合的专属 Skills。
 
 ## 前置条件
-- Global Skills 已安装（skill-creator、systematic-debugging 等）
+- Global Skills 已安装（skill-creator 等通用 meta skill）
 - 当前目录是目标项目的根目录
 
 ## 步骤
