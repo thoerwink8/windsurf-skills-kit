@@ -176,6 +176,23 @@ Windsurf 支持多 workspace 跨项目聚合 skills（打开 workspace 即自动
 
 对比 windsurf-dao（行为规则 sidecar）：dao 的 skills 各管一个域、无重叠，全播无歧义。图书馆是多品牌同域货架，必须策展。
 
+### 与 windsurf-dao 项目的关系
+
+[windsurf-dao](https://github.com/thoerwink8/windsurf-dao) 是基于 obra/superpowers + 道德经哲学化发展的内生 AI 协作体系，与本图书馆**职责正交**：
+
+| 维度 | windsurf-skills-kit | windsurf-dao |
+|---|---|---|
+| 定位 | 通用 skill 图书馆 | 哲学化内生体系 |
+| 范围 | 多变体并存（含 obra/superpowers + anthropics/skills 等） | 完整内化 superpowers 全部范式（已善行无辙） |
+| 使用方式 | junction 按需挑选到目标项目 | sidecar 全局 mantra + 27 内生 skill |
+| 适合谁 | 任意 Windsurf 项目 | 偏好道德经哲学的用户 |
+
+**怎么选**：
+
+- 想保持中立、按需挑选 → 用 skills-kit junction 链接
+- 想要哲学化内生体系 → 用 windsurf-dao sidecar
+- **不要混用同名 skill**（如 skills-kit 的 `systematic-debugging` 与 dao 的 `dao-debug` 功能重叠 80%+，混用会导致 description 冲突 AI 选择不可控）
+
 ```
 windsurf-skills-kit（货架，源文件唯一存放地）
   └── skills/
@@ -207,3 +224,4 @@ windsurf-skills-kit（货架，源文件唯一存放地）
 - [obra/superpowers](https://github.com/obra/superpowers) — Jesse Vincent 的开发超能力 Skills
 - [dontbesilent/dbskill](https://github.com/dontbesilent2025/dbskill) — dontbesilent 商业诊断工具箱
 - [Agent Skills 规范](https://agentskills.io/) — 跨 IDE 的 Skills 开放标准
+- [thoerwink8/windsurf-dao](https://github.com/thoerwink8/windsurf-dao) — 基于本图书馆 + obra/superpowers + 道德经哲学发展的内生 AI 协作体系
